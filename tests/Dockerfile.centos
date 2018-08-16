@@ -1,4 +1,4 @@
-FROM debian:9.5
+FROM centos:latest
 
 # create workdir
 RUN mkdir -p /app
