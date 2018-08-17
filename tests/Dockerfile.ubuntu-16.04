@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:xenial
 
 # create workdir
 RUN mkdir -p /app

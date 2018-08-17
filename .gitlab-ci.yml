@@ -12,15 +12,13 @@ build:
   before_script:
     - docker version
     - "docker info"
-    # - "docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY"
   script:
-    - "docker build -f ./tests/Dockerfile.debian -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-debian:latest --pull ."
-    # - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}-debian:latest"
-    - "docker build -f ./tests/Dockerfile.ubuntu -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu:latest --pull ."
-    # - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu:latest"
+    - "docker build -f ./tests/Dockerfile.debian-8 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-debian-8:latest --pull ."
+    - "docker build -f ./tests/Dockerfile.debian-9 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-debian-9:latest --pull ."
+    - "docker build -f ./tests/Dockerfile.ubuntu-16.04 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu-16.04:latest --pull ."
+    - "docker build -f ./tests/Dockerfile.ubuntu-18.04 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu-18.04:latest --pull ."
   after_script:
     - "docker image prune -af"
-    # - "docker logout ${CI_REGISTRY}"
 # deploy:
 #   stage: deploy
 #   image: gitlab/dind:latest
