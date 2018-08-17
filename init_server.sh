@@ -24,31 +24,26 @@ function detectOS()
     elif grep -Eqi "Red Hat Enterprise Linux Server" /etc/issue || grep -Eq "Red Hat Enterprise Linux Server" /etc/*-release; then
         DISTRO='redhat'
         PM='yum'
-    elif grep -Eqi "Aliyun" /etc/issue || grep -Eq "Aliyun" /etc/*-release; then
-        DISTRO='fliyun'
-        PM='yum'
     elif grep -Eqi "Fedora" /etc/issue || grep -Eq "Fedora" /etc/*-release; then
         DISTRO='fedora'
         PM='yum'
     elif grep -Eqi "Debian" /etc/issue || grep -Eq "Debian" /etc/*-release; then
         DISTRO='debian'
         PM='apt'
-    elif grep -Eqi "Deepin" /etc/issue || grep -Eq "Deepin" /etc/*-release; then
-        DISTRO='Deepin'
-        PM='apt'
     elif grep -Eqi "Ubuntu" /etc/issue || grep -Eq "Ubuntu" /etc/*-release; then
         DISTRO='ubuntu'
-        PM='apt'
-    elif grep -Eqi "Raspbian" /etc/issue || grep -Eq "Raspbian" /etc/*-release; then
-        DISTRO='Raspbian'
         PM='apt'
     else
         DISTRO='unknown'
     fi
 }
 
-function package_exists() {
+function isPackageExists() {
     return dpkg -l "$1" &> /dev/null
+}
+
+function isPackageInstalled() {
+    dpkg-query -Wf'${db:Status-abbrev}' "$1" 2>/dev/null | grep -q '^i'
 }
 
 function installDocker {
@@ -59,30 +54,30 @@ function installDocker {
         apt upgrade -y
         #apt remove docker docker-engine docker.io
 
-        if package_exists docker ; then
+        if isPackageExists docker ; then
             apt remove docker;
         fi
 
-        if package_exists docker-engine ; then
+        if isPackageExists docker-engine ; then
             apt remove docker;
         fi
 
-        if package_exists docker.io ; then
+        if isPackageExists docker.io ; then
             apt remove docker;
         fi
 
         apt install \
-           apt-transport-https \
-           ca-certificates \
-           curl \
-           gnupg2 \
-           software-properties-common -y
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg2 \
+        software-properties-common -y
         printHeader "Installing Docker"
         curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
         add-apt-repository \
-         "deb [arch=amd64] https://download.docker.com/linux/$DISTRO \
-         $(lsb_release -cs) \
-         stable"
+        "deb [arch=amd64] https://download.docker.com/linux/$DISTRO \
+        $(lsb_release -cs) \
+        stable"
         apt update
         apt install docker-ce -y
     fi
@@ -126,7 +121,7 @@ function runDockerGateway {
 
 function setupDockerUser {
     # causes issues with Micro Name Service Caching Daemon, need to remove
-    if package_exists unscd ; then
+    if isPackageInstalled unscd ; then
         apt remove --purge unscd -y
     fi
 
@@ -239,27 +234,6 @@ function guide {
 
 }
 
-# OPTS=`getopt -o vh: --long verbose,dry-run,help,stack-size: -n 'parse-options' "$@"`
-
-# if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
-
-# echo "$OPTS"
-# eval set -- "$OPTS"
-
-# HELP=false
-# GUIDE=false
-# TEST=false
-
-# while true; do
-#   case "$1" in
-#     -h | --help )    HELP=true; shift ;;
-#     -g | --guide )    GUIDE=true; shift ;;
-#     -t | --test ) TEST=true; shift ;;
-#     * ) break ;;
-#   esac
-# done
-
-
 options=$(getopt -o hgt --long color: -- "$@")
 [ $? -eq 0 ] || {
     echo "Incorrect options provided"
@@ -278,14 +252,14 @@ while true; do
     -t)
       TEST=true;
       ;;
-    --color)
-        shift; # The arg is next in position args
-        COLOR=$1
-        [[ ! $COLOR =~ BLUE|RED|GREEN ]] && {
-            echo "Incorrect options provided"
-            exit 1
-        }
-        ;;
+    # --color)
+    #     shift; # The arg is next in position args
+    #     COLOR=$1
+    #     [[ ! $COLOR =~ BLUE|RED|GREEN ]] && {
+    #         echo "Incorrect options provided"
+    #         exit 1
+    #     }
+    #     ;;
     --)
         shift
         break
@@ -297,20 +271,25 @@ done
 
 detectOS
 
-if [ $TEST ]; then
-  installDocker
-  installDockerCompose
-  setupDockerGateway
-  setupDockerUser
-elif [ $GUIDE ]; then
-  guide
+if [ $DISTRO = "ubuntu" ] || [ $DISTRO = 'debian' ]; then
+    if [ $TEST ]; then
+        installDocker
+        installDockerCompose
+        setupDockerGateway
+        setupDockerUser
+    elif [ $GUIDE ]; then
+        guide
+    else
+        installDocker
+        installDockerCompose
+        setupDockerGateway
+        runDockerGateway
+        setupDockerUser
+        setupUserSSHKey
+    fi
 else
-  installDocker
-  installDockerCompose
-  setupDockerGateway
-  runDockerGateway
-  setupDockerUser
-  setupUserSSHKey
+    printMessage "Unsupported distribution"
+    exit 1
 fi
 
 set +e
