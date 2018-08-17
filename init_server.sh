@@ -1,4 +1,6 @@
 #!/bin/bash
+GATEWAY_DIR='/docker/docker-gateway'
+
 set -e
 
 function printMessage {
@@ -96,7 +98,6 @@ function installDockerCompose {
 
 
 function setupDockerGateway {
-  local GATEWAY_DIR='/docker/docker-gateway'
   if [ -d "$GATEWAY_DIR" ]; then
       echo '[✔] Docker gateway is already installed., for update try `git pull` in' $GATEWAY_DIR
   else
