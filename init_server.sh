@@ -1,5 +1,7 @@
 #!/bin/bash
 GATEWAY_DIR='/docker/docker-gateway'
+USER='user'
+USER_DIR=/home/$USER
 
 set -e
 
@@ -123,8 +125,10 @@ function runDockerGateway {
 }
 
 function setupDockerUser {
-    local USER='user'
-    local USER_DIR=/home/$USER
+    # causes issues with Micro Name Service Caching Daemon, need to remove
+    if package_exists unscd ; then
+        apt remove --purge unscd -y
+    fi
 
     if [ -d $USER_DIR ]; then
         echo '[✔] User is already installed.'
@@ -133,7 +137,7 @@ function setupDockerUser {
 
         # prepare user which runs in containers (Docker security)
         useradd $USER
-        echo "$USER:x:1001:1001:,,,:$USER_DIR:/bin/bash" >>/etc/passwd
+        echo "$USER:x:999:999:,,,:$USER_DIR:/bin/bash" >>/etc/passwd
         echo "$USER:!:15392:0:99999:7:::" >>/etc/shadow
 
         mkdir -p $USER_DIR/.ssh/
@@ -149,8 +153,6 @@ function setupDockerUser {
 
 
 function setupUserSSHKey {
-    local USER='user'
-    local USER_DIR=/home/$USER
     # setup ssh key
     echo 'Do you want to upload your public key or generate new private key?'
     select yn in 'Upload public' 'Generate new private key'; do
@@ -208,7 +210,7 @@ function guide {
       esac
   done
 
-  printHeader "Do you want to start Docker Gateway?"
+  printHeader "Do you want to run Docker Gateway?"
   select yn in "Yes" "No"; do
       case $yn in
           'Yes' ) runDockerGateway; break;;
@@ -220,7 +222,16 @@ function guide {
   printHeader "Do you want to setup user for Docker gateway?"
   select yn in "Yes" "No"; do
       case $yn in
-          'Yes' ) setupDockerUser; setupUserSSHKey; break;;
+          'Yes' ) setupDockerUser; break;;
+          'No' )
+      break;;
+      esac
+  done
+
+  printHeader "Do you want to setup SSH key for user: $USER?"
+  select yn in "Yes" "No"; do
+      case $yn in
+          'Yes' ) setupUserSSHKey; break;;
           'No' )
       break;;
       esac
@@ -299,6 +310,7 @@ else
   setupDockerGateway
   runDockerGateway
   setupDockerUser
+  setupUserSSHKey
 fi
 
 set +e
