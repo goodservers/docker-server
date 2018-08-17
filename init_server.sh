@@ -114,7 +114,10 @@ function setupDockerGateway {
 
 function runDockerGateway {
     # create network which connects the containers
-    docker network create nginx-proxy
+    if ! [ `docker network ls | grep 'nginx-proxy' | wc -l` -eq 1 ]; then
+        docker network create nginx-proxy
+    fi
+
     # run docker gateway
     cd $GATEWAY_DIR; docker-compose up -d
 }
