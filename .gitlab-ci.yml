@@ -1,7 +1,7 @@
 stages:
   - build
   - deploy-gh
-build:
+build debian:
   stage: build
   image: docker:latest
   services:
@@ -14,6 +14,17 @@ build:
   script:
     - docker build -f ./tests/Dockerfile.debian-8 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-debian-8:latest --pull .
     - docker build -f ./tests/Dockerfile.debian-9 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-debian-9:latest --pull .
+build ubuntu:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: "overlay"
+  before_script:
+    - docker version
+    - docker info
+  script:
     - docker build -f ./tests/Dockerfile.ubuntu-16.04 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu-16.04:latest --pull .
     - docker build -f ./tests/Dockerfile.ubuntu-18.04 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu-18.04:latest --pull .
   after_script:
@@ -24,5 +35,6 @@ deploy to github:
   #only:
   #  - master
   script:
+    - ls -la
     - chmod +x ./git-push
     - ./git-push git@github.com:goodservers/docker-server.git
