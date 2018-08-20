@@ -1,5 +1,5 @@
 # Docker Gateway installation script
-Setup: `wget https://gitlab.com/tomwagner/init-docker-server/raw/master/init_server.sh -O init_server.sh; chmod 700 ./init_server.sh;./init_server.sh;`
+`bash <(wget -o /dev/null --no-check-certificate -O - https://gitlab.com/tomwagner/init-docker-server/raw/master/init_server.sh)`
 
 # Supported OS
 * Debian 9 (strech), 8 (jessie)
