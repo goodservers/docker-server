@@ -1,5 +1,6 @@
 stages:
   - build
+  - deploy-gh
 build:
   stage: build
   image: docker:latest
@@ -19,22 +20,9 @@ build:
     - "docker build -f ./tests/Dockerfile.ubuntu-18.04 -t ${CI_REGISTRY}/${CI_PROJECT_PATH}-ubuntu-18.04:latest --pull ."
   after_script:
     - "docker image prune -af"
-# deploy:
-#   stage: deploy
-#   image: gitlab/dind:latest
-#   only:
-#     - "master"
-#   environment: production
-#   services:
-#     - docker:dind
-#   before_script:
-#     - mkdir -p ~/.ssh
-#     - echo "$DEPLOY_SERVER_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-#     - chmod 600 ~/.ssh/id_rsa
-#     - eval "$(ssh-agent -s)"
-#     - ssh-add ~/.ssh/id_rsa
-#     - ssh-keyscan -H $DEPLOYMENT_SERVER_IP >> ~/.ssh/known_hosts
-#   script:
-#     - printf "\nEXAMPLE_ENV=${EXAMPLE_ENV}\n" > .env
-#     - scp -r ./.env ./docker-compose.yml user@${DEPLOYMENT_SERVER_IP}:~/
-#     - ssh user@$DEPLOYMENT_SERVER_IP "docker login -u ${CI_REGISTRY_USER} --password-stdin ${CI_REGISTRY} <<< ${CI_REGISTRY_PASSWORD}; docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest; docker-compose -f docker-compose.yml --project-name=$(date +%s) up --scale next-project=2 -d;"
+deploy to github:
+  stage: deploy-gh
+  environment: production
+  only:
+    - master
+  script: chmod 700 git-push; ./git-push git@github.com:goodservers/docker-server.git
