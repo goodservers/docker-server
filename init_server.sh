@@ -154,7 +154,8 @@ function setupUserSSHKey {
       case $yn in
           'Upload public' ) nano +10 $USER_DIR/.ssh/authorized_keys; break;;
           'Generate new private key' )
-        ssh-keygen -f $USER_DIR/.ssh/deploy.guide.key -t rsa -b 4096 -C 'deploy@deploy.guide' -P ''
+        # https://medium.com/risan/upgrade-your-ssh-key-to-ed25519-c6e8d60d3c54
+        ssh-keygen -f $USER_DIR/.ssh/deploy.guide.key -o -a 100 -t ed25519 -C 'deploy@deploy.guide' -P ''
         cat $USER_DIR/.ssh/deploy.guide.key.pub >> $USER_DIR/.ssh/authorized_keys
         echo "Copy your private key (it will be visible just for now):"
         cat $USER_DIR/.ssh/deploy.guide.key
