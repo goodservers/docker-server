@@ -31,9 +31,8 @@ build ubuntu:
     - docker image prune -af
 deploy to github:
   stage: deploy-gh
-  environment: production
-  #only:
-  #  - master
+  only:
+   - master
   script:
     - ls -la
     - chmod +x ./git-push
