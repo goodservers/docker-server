@@ -1,9 +1,9 @@
 # Docker Gateway installation script
-`bash <(wget -o /dev/null --no-check-certificate -O - https://gitlab.com/tomwagner/init-docker-server/raw/master/init_server.sh)`
+`bash <(wget -o /dev/null --no-check-certificate -O - https://raw.githubusercontent.com/goodservers/docker-server/master/init_server.sh)`
 
 # Supported OS
-* Debian 9 (strech), 8 (jessie)
-* Ubuntu 18.04 (bionic), 16.04 (xenial),
+* Debian 10 (buster), LTS 9 (strech), 8 (jessie)
+* Ubuntu 19.04 (disco), LTS 18.04 (bionic), 16.04 (xenial),
 
 ## Info
 Simple docker and docker compose gateway for any kind of docker application. Automatic handles domains, letsencrypt certificates, nginx settings and containers health. No setup needed. Gateway consists of from 4 containers:
